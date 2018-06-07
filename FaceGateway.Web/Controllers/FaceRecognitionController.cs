@@ -14,7 +14,7 @@ namespace FaceGateway.Web.Controllers
         private IFacesService facesService;
         private IImagesService imagesService;
         private ICamerasService camerasService;
-        private string tenatGroupId;
+        private string tenantGroupId = "thieves-group-1";
 
         public FaceRecognitionController(IFacesService facesService, IImagesService imagesService, ICamerasService camerasService) {
             this.facesService = facesService;
@@ -23,6 +23,7 @@ namespace FaceGateway.Web.Controllers
         }
 
         [HttpPost]
+        [Route("api/FaceRecognition/Alert")]
         public async Task<IHttpActionResult> Alert(ImageRecognitionMessage message) {
             var hub  = GlobalHost.ConnectionManager.GetHubContext<AlertHub>();
             var faces = facesService.GetFaces(message.FaceIds);
@@ -34,13 +35,21 @@ namespace FaceGateway.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IHttpActionResult> RegisterFaceAsync([FromBody]ImageModel model)
+        [Route("api/FaceRecognition/Register")]
+        public async Task<IHttpActionResult> RegisterFaceAsync([FromBody]FaceModel faceModel)
         {
-            var faceId = await facesService.RegisterFaceAsync(tenatGroupId, model.Name);
-            var stream = new MemoryStream(model.Content);
-            await facesService.AddFaceAsync(tenatGroupId, faceId, stream);
+            var faceId = await facesService.RegisterFaceAsync(tenantGroupId, faceModel.Name);
 
-            return Ok();
+            Parallel.ForEach(faceModel.Base64Images, async (image) =>
+            {
+                var faceData = System.Convert.FromBase64String(image);
+                var stream = new MemoryStream(faceData);
+                await facesService.AddFaceAsync(tenantGroupId, faceId, stream);
+            });
+            
+            await facesService.TrainAsync(tenantGroupId);
+
+            return Ok(faceId);
         }
     }
 }

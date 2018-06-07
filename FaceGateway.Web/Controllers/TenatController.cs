@@ -11,18 +11,26 @@ namespace FaceGateway.Web.Controllers
     {
         private readonly IFacesService facesService;
 
-        [HttpPost]
-        public async Task CreateTenatAsync([FromUri] string name)
+        public TenatController(IFacesService facesService)
         {
-            var groupId = GenerateTenatGroupId(name);
-
-            await facesService.CreateTenatAsync(name, groupId);
+            this.facesService = facesService;
         }
 
-        private string GenerateTenatGroupId(string value)
+        [HttpPost]
+        public async Task<IHttpActionResult> CreateTenantAsync([FromUri] string id)
         {
-            var sha1 = SHA1.Create();
-            var data = sha1.ComputeHash(Encoding.Default.GetBytes(value));
+            var name = id;
+            var groupId = GenerateTenantGroupId(name);
+
+            await facesService.CreateTenantAsync(name, groupId);
+
+            return Ok(groupId);
+        }
+
+        private string GenerateTenantGroupId(string value)
+        {
+            var md5 = MD5.Create();
+            var data = md5.ComputeHash(Encoding.Default.GetBytes(value));
             var id = new Guid(data);
 
             return id.ToString();

@@ -61,7 +61,6 @@
     <Compile Include="ConcreteServices\FacesService.cs" />
     <Compile Include="ConcreteServices\ImagesService.cs" />
     <Compile Include="Face.cs" />
-    <Compile Include="FacesService.cs" />
     <Compile Include="ICamerasService.cs" />
     <Compile Include="IFacesService.cs" />
     <Compile Include="IImagesService.cs" />

@@ -1,8 +1,9 @@
 ﻿namespace FaceGateway.Services
 {
-    public class ImageModel
+    public class FaceModel
     {
         public string Name { get; set; }
-        public byte[] Content { get; set; }
+
+        public string[] Base64Images { get; set; }
     }
 }

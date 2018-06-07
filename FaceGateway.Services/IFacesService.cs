@@ -9,10 +9,12 @@ namespace FaceGateway.Services
     {
         IEnumerable<Face> GetFaces(IEnumerable<Guid> faceIds);
 
-        Task CreateTenatAsync(string name, string groupId);
+        Task CreateTenantAsync(string name, string groupId);
 
-        Task<Guid> RegisterFaceAsync(string tenatGroupId, string faceName);
+        Task<Guid> RegisterFaceAsync(string tenantGroupId, string faceName);
 
-        Task AddFaceAsync(string tenatGroupId, Guid faceId, Stream stream);
+        Task AddFaceAsync(string tenantGroupId, Guid faceId, Stream stream);
+
+        Task TrainAsync(string tenantGroupId);
     }
 }
