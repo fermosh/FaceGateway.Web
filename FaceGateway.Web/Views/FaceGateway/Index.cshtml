@@ -1,0 +1,19 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Face Gateway</h2>
+<p>Alerts:</p>
+<textarea id="alertConsole" cols="100" rows="100"></textarea>
+<script type="text/javascript">
+    $(
+        function () {
+            var alertHub = $.connection.alertHub;
+            alertHub.client.handleAlert = function (message) {
+                $('#alertConsole').append(message);
+            };
+            $.connection.hub.start();
+        }
+    );
+</script>
