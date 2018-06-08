@@ -2,10 +2,30 @@
 @{
     ViewBag.Title = "Index";
 }
+<div class="">
+    <div class="row">
+        <h2>Face Gateway</h2>
+        <p>Alerts:</p>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <img id="alertPhoto" class="img-responsive" src="~/Images/preview-logo_flexi_rgb.png" />
 
-<h2>Face Gateway</h2>
-<p>Alerts:</p>
-<textarea id="alertConsole" cols="100" rows="100"></textarea>
+        </div>
+        <div class="col-sm-3">
+            <section>
+                <p>Datos</p>
+                <p>Nombre</p>
+                <p id="detectedName">&nbsp;</p>
+                <p>Imagen</p>
+                <img id="trainingPhoto" class="img-responsive" src="~/Images/person.png" />
+
+            </section>
+        </div>
+
+    </div>
+    <textarea id="alertConsole" cols="10"></textarea>
+</div>
 <script type="text/javascript">
     $(
         function () {

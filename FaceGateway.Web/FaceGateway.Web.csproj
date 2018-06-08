@@ -210,6 +210,8 @@
     <Content Include="fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="fonts\glyphicons-halflings-regular.eot" />
     <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
+    <Content Include="Images\person.png" />
+    <Content Include="Images\preview-logo_flexi_rgb.png" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\jquery-1.6.4.js" />

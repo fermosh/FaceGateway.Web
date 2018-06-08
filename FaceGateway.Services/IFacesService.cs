@@ -7,7 +7,7 @@ namespace FaceGateway.Services
 {
     public interface IFacesService
     {
-        IEnumerable<Face> GetFaces(IEnumerable<Guid> faceIds);
+        Task<IEnumerable<Face>> GetFacesAsync(IEnumerable<Guid> faceIds);
 
         Task CreateTenantAsync(string name, string groupId);
 

@@ -40,7 +40,7 @@ namespace FaceGateway.Services.ConcreteServices
             await faceServiceClient.AddPersonFaceAsync(tenantGroupId, faceId, stream);
         }
 
-        public IEnumerable<Face> GetFaces(IEnumerable<Guid> faceIds)
+        public async Task<IEnumerable<Face>> GetFacesAsync(IEnumerable<Guid> faceIds)
         {
             if (!faceIds.Any()) return new List<Face>();
             var storageAcct = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["AZURE-TABLES-CONN-STR"]);
@@ -49,9 +49,10 @@ namespace FaceGateway.Services.ConcreteServices
             var query = new TableQuery<FaceEntity>();
             var wheres = faceIds.Select( fid => TableQuery.GenerateFilterCondition("FaceId",QueryComparisons.Equal,fid.ToString()) );
             var filter = query.Where(Combine(wheres));
-
-//            return faces.Select(f => new Face { Name = f.Name, TrainingImageFile = f.TrainingImageName });
-            return table.ExecuteQuery(filter).Select(f => new Face { Name = f.Name, TrainingImageFile = f.TrainingImageFile });
+            return await Task.Run(() =>
+           {
+               return table.ExecuteQuery(filter).Select(f => new Face { Name = f.Name, TrainingImageFile = f.TrainingImageFile });
+           });
         }
 
         public async Task TrainAsync(string tenantGroupId)

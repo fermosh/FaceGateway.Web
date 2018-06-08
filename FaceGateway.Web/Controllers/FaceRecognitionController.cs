@@ -11,9 +11,9 @@ namespace FaceGateway.Web.Controllers
 {
     public class FaceRecognitionController : ApiController
     {
-        private IFacesService facesService;
-        private IImagesService imagesService;
-        private ICamerasService camerasService;
+        private readonly IFacesService facesService;
+        private readonly IImagesService imagesService;
+        private readonly ICamerasService camerasService;
         private string tenantGroupId = "thieves-group-1";
 
         public FaceRecognitionController(IFacesService facesService, IImagesService imagesService, ICamerasService camerasService) {
@@ -26,7 +26,7 @@ namespace FaceGateway.Web.Controllers
         [Route("api/FaceRecognition/Alert")]
         public async Task<IHttpActionResult> Alert(ImageRecognitionMessage message) {
             var hub  = GlobalHost.ConnectionManager.GetHubContext<AlertHub>();
-            var faces = facesService.GetFaces(message.FaceIds);
+            var faces = await facesService.GetFacesAsync(message.FaceIds);
             var alertImage = imagesService.GetFullImageUrl(message.FileName);
             var camera = camerasService.GetCamera(message.CamId);
             var alertVM = new AlertVM { Faces = faces , AlertImage = alertImage, Camera = camera };
