@@ -1,5 +1,6 @@
 ﻿using Microsoft.WindowsAzure.Storage.Table;
 using System;
+using System.Collections.Generic;
 
 namespace FaceGateway.Services.AzureEntities
 {
@@ -20,6 +21,6 @@ namespace FaceGateway.Services.AzureEntities
 
         public string Name { get; set; }
 
-        public string TrainingImageFile { get; set; }
+        public IEnumerable<string> TrainingImageFiles { get; set; }
     }
 }

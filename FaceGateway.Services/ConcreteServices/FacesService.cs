@@ -61,7 +61,7 @@ namespace FaceGateway.Services.ConcreteServices
             {
                 var faceData = Convert.FromBase64String(image);
                 var addFaceTask = AddFaceAsync(tenantGroupId, result.PersonId, GetStream(faceData));
-                var associateFaceTask = AssociateFaceToTenant(tenantGroupId, result.PersonId, faceModel.Name, "");
+                var associateFaceTask = AssociateFaceToTenant(tenantGroupId, result.PersonId, faceModel.Name, new string[] { });
                 var uploadBlobTask = UploadBlob(faceModel.Name, GetStream(faceData));
 
                 await addFaceTask;
@@ -79,7 +79,7 @@ namespace FaceGateway.Services.ConcreteServices
             await faceServiceClient.AddPersonFaceAsync(tenantGroupId, faceId, stream);
         }
 
-        private async Task AssociateFaceToTenant(string tenantGroupId, Guid faceId, string name, string imageName)
+        private async Task AssociateFaceToTenant(string tenantGroupId, Guid faceId, string name, IEnumerable<string> imageNames)
         {
             var tableClient = storageAccount.CreateCloudTableClient();
             var table = tableClient.GetTableReference("Faces");
@@ -87,11 +87,11 @@ namespace FaceGateway.Services.ConcreteServices
             {
                 Name = name,
                 FaceId = faceId,
-                TrainingImageFile = imageName
+                TrainingImageFiles = imageNames
             };
             var insertOperation = TableOperation.Insert(faceEntity);
 
-            table.Execute(insertOperation);
+           await Task.Run( () => table.Execute(insertOperation) );
         }
 
         private void RegisterTenant(string name, string id)
@@ -117,7 +117,7 @@ namespace FaceGateway.Services.ConcreteServices
             var filter = query.Where(Combine(wheres));
             return await Task.Run(() =>
            {
-               return table.ExecuteQuery(filter).Select(f => new Face { Name = f.Name, TrainingImageFile = f.TrainingImageFile });
+               return table.ExecuteQuery(filter).Select(f => new Face { Name = f.Name, TrainingImageFiles = f.TrainingImageFiles });
            });
         }
 

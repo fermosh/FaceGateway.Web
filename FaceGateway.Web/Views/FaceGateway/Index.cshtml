@@ -32,6 +32,7 @@
             var alertHub = $.connection.alertHub;
             alertHub.client.handleAlert = function (message) {
                 $('#alertConsole').append(message);
+                $('#detectedName').text(message);
             };
             $.connection.hub.start();
         }
