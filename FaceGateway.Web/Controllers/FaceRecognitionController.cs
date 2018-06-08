@@ -38,16 +38,7 @@ namespace FaceGateway.Web.Controllers
         [Route("api/FaceRecognition/Register")]
         public async Task<IHttpActionResult> RegisterFaceAsync([FromBody]FaceModel faceModel)
         {
-            var faceId = await facesService.RegisterFaceAsync(tenantGroupId, faceModel.Name);
-
-            Parallel.ForEach(faceModel.Base64Images, async (image) =>
-            {
-                var faceData = System.Convert.FromBase64String(image);
-                var stream = new MemoryStream(faceData);
-                await facesService.AddFaceAsync(tenantGroupId, faceId, stream);
-            });
-            
-            await facesService.TrainAsync(tenantGroupId);
+            var faceId = await facesService.RegisterFaceAsync(tenantGroupId, faceModel);
 
             return Ok(faceId);
         }

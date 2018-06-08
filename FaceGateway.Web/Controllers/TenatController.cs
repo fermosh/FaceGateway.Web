@@ -17,23 +17,23 @@ namespace FaceGateway.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IHttpActionResult> CreateTenantAsync([FromUri] string id)
+        [Route("api/Tenat/{name}")]
+        public async Task<IHttpActionResult> CreateTenantAsync([FromUri] string name)
         {
-            var name = id;
-            var groupId = GenerateTenantGroupId(name);
+            var groupId = CreateGroupId(name);
 
             await facesService.CreateTenantAsync(name, groupId);
 
             return Ok(groupId);
         }
 
-        private string GenerateTenantGroupId(string value)
+        private string CreateGroupId(string value)
         {
             var md5 = MD5.Create();
             var data = md5.ComputeHash(Encoding.Default.GetBytes(value));
-            var id = new Guid(data);
+            var guid = new Guid(data);
 
-            return id.ToString();
+            return guid.ToString();
         }
     }
 }
