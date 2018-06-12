@@ -21,6 +21,6 @@ namespace FaceGateway.Services.AzureEntities
 
         public string Name { get; set; }
 
-        public IEnumerable<string> TrainingImageFiles { get; set; }
+        public string TrainingImageFiles { get; set; }
     }
 }

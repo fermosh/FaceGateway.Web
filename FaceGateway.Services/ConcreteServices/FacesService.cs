@@ -1,17 +1,17 @@
 ﻿using FaceGateway.Services.AzureEntities;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.ProjectOxford.Face;
 using Microsoft.ProjectOxford.Face.Contract;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.WindowsAzure.Storage.Table;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage.Blob;
-using System.Drawing.Imaging;
 
 namespace FaceGateway.Services.ConcreteServices
 {
@@ -33,7 +33,7 @@ namespace FaceGateway.Services.ConcreteServices
             RegisterTenant(name, groupId);
         }
 
-        private async Task UploadBlob(string name, Stream stream)
+        private async Task<string> UploadBlobAsync(Stream stream)
         {
             var cloudBlobClient = storageAccount.CreateCloudBlobClient();
             var cloudBlobContainer = cloudBlobClient.GetContainerReference("face-training-tray");
@@ -46,28 +46,32 @@ namespace FaceGateway.Services.ConcreteServices
 
             await cloudBlobContainer.SetPermissionsAsync(permissions);
 
-            var blobName = $"{name} {DateTime.Now.ToString("yyyyMMddHHmmss")}.jpg";
+            var blobName = $"{Guid.NewGuid()}.jpg";
             var cloudBlockBlob = cloudBlobContainer.GetBlockBlobReference(blobName);
 
             cloudBlockBlob.Properties.ContentType = @"image\jpeg";
             await cloudBlockBlob.UploadFromStreamAsync(stream);
+
+            return blobName;
         }
 
         public async Task<Guid> RegisterFaceAsync(string tenantGroupId, FaceModel faceModel)
         {
             var result = await faceServiceClient.CreatePersonAsync(tenantGroupId, faceModel.Name);
+            var imageNames = new ConcurrentBag<string>();
 
-            Parallel.ForEach(faceModel.Base64Images, async (image) =>
+            var tasks = faceModel.Base64Images.Select(async (image) =>
             {
                 var faceData = Convert.FromBase64String(image);
-                var addFaceTask = AddFaceAsync(tenantGroupId, result.PersonId, GetStream(faceData));
-                var associateFaceTask = AssociateFaceToTenant(tenantGroupId, result.PersonId, faceModel.Name, new string[] { });
-                var uploadBlobTask = UploadBlob(faceModel.Name, GetStream(faceData));
+                await AddFaceAsync(tenantGroupId, result.PersonId, GetStream(faceData));
+                var blobName = await UploadBlobAsync(GetStream(faceData));
 
-                await addFaceTask;
-                await associateFaceTask;
-                await uploadBlobTask;
+                imageNames.Add(blobName);
             });
+
+            await Task.WhenAll(tasks);
+
+            var associateFaceTask = AssociateFaceToTenant(tenantGroupId, result.PersonId, faceModel.Name, imageNames.ToArray());
 
             await TrainAsync(tenantGroupId);
 
@@ -87,11 +91,11 @@ namespace FaceGateway.Services.ConcreteServices
             {
                 Name = name,
                 FaceId = faceId,
-                TrainingImageFiles = imageNames
+                TrainingImageFiles = JsonConvert.SerializeObject(imageNames)
             };
             var insertOperation = TableOperation.Insert(faceEntity);
 
-           await Task.Run( () => table.Execute(insertOperation) );
+           await Task.Run(() => table.Execute(insertOperation));
         }
 
         private void RegisterTenant(string name, string id)
@@ -117,7 +121,7 @@ namespace FaceGateway.Services.ConcreteServices
             var filter = query.Where(Combine(wheres));
             return await Task.Run(() =>
            {
-               return table.ExecuteQuery(filter).Select(f => new Face { Name = f.Name, TrainingImageFiles = f.TrainingImageFiles });
+               return table.ExecuteQuery(filter).Select(f => new Face { Name = f.Name, TrainingImageFiles = JsonConvert.DeserializeObject<IEnumerable<string>>(f.TrainingImageFiles)});
            });
         }
 
