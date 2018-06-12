@@ -14,7 +14,7 @@ namespace FaceGateway.Web.Controllers
         private readonly IFacesService facesService;
         private readonly IImagesService imagesService;
         private readonly ICamerasService camerasService;
-        private string tenantGroupId = "thieves-group-1";
+        private string tenantGroupId = "48e69b89-1df1-d28e-6314-c0792b6defdb";
 
         public FaceRecognitionController(IFacesService facesService, IImagesService imagesService, ICamerasService camerasService) {
             this.facesService = facesService;
