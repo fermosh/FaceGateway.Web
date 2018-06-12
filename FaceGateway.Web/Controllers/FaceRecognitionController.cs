@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System.IO;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace FaceGateway.Web.Controllers
 {
@@ -24,6 +25,7 @@ namespace FaceGateway.Web.Controllers
 
         [HttpPost]
         [Route("api/FaceRecognition/Alert")]
+        [EnableCors("*","*","*")]
         public async Task<IHttpActionResult> Alert(ImageRecognitionMessage message) {
             var hub  = GlobalHost.ConnectionManager.GetHubContext<AlertHub>();
             var faces = await facesService.GetFacesAsync(message.FaceIds);

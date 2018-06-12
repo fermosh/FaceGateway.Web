@@ -13,13 +13,15 @@
 
         </div>
         <div class="col-sm-3">
-            <section>
-                <p>Datos</p>
+            <section id="trainingData">
                 <p>Nombre</p>
                 <p id="detectedName">&nbsp;</p>
                 <p>Imagen</p>
-                <img id="trainingPhoto" class="img-responsive" src="~/Images/person.png" />
-
+                <ul id="training-slider">
+                    <li>
+                        <img id="trainingPhoto" class="img-responsive" src="~/Images/person.png" />
+                    </li>
+                </ul>
             </section>
         </div>
 
@@ -31,10 +33,62 @@
         function () {
             var alertHub = $.connection.alertHub;
             alertHub.client.handleAlert = function (message) {
-                $('#alertConsole').append(message);
-                $('#detectedName').text(message);
+                var messageObj = JSON.parse(message);
+                FaceRecognition.alertMessage = messageObj;
+                $('#alertConsole').append(messageObj);
+                FaceRecognition.updateSlideshow(0);
             };
             $.connection.hub.start();
+
+            
+
         }
+        
     );
+
+    var FaceRecognition = {
+        emptySlideshow: null,
+        slideshowElement: null,
+        nameElement: null,
+        alertMessage: null,
+        currentDetection: {},
+        setupSlideshow: function (element, nameElement) {
+            this.slideshowElement = $(element);
+            this.nameElement = $(nameElement);
+            this.emptySlideshow = slideshowElement.html();
+            $(element).lightSlider({
+                gallery: true,
+                item: 1,
+                loop: true,
+                slideMargin: 0,
+                thumbItem:9
+            });
+        },
+        clearSlideshow: function () {
+            this.slideshowElement.html(this.emptySlideshow);
+        },
+        updateSlideshow: function (detectionIndex) {
+            this.clearSlideshow();
+            if (typeof (this.alertMessage) !== 'object' ||
+                typeof (this.alertMessage.Faces) !== 'object' ||
+                this.alertMessage.Faces.length === 0) {
+                console.error('no faces');
+                return;
+            }
+            this.currentDetection = this.alertMessage.Faces[detectionIndex];
+            this.nameElement.text(this.currentDetection.Name);
+            this.currentDetection.TrainingImageFiles.forEach(function (image) {
+                var li = $(document.createElement("li"));
+                var img = $(document.createElement("img"));
+                img.attr({ src: image , class:"img-responsive" });
+                li.append(img);
+                this.slideshowElement.append(li);
+            });
+        }
+    };
+    var slideshowElement = $('#training-slider');
+    var nameElement = $('#detectedName');
+    FaceRecognition.setupSlideshow(slideshowElement);
+
+
 </script>

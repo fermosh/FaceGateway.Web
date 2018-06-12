@@ -10,7 +10,7 @@ namespace FaceGateway.Services.ConcreteServices
     {
         public string GetFullImageUrl(string imageName)
         {
-            return Guid.NewGuid().ToString();
+            return imageName;
         }
     }
 }
